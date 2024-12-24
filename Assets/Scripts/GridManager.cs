@@ -5,7 +5,7 @@ using UnityEngine;
 
 /*
  TODO 
-1. Different states of GameObject - tile is populated, tile is empty
+one prefab array instead of separate prefabs
  */
 
 public class GridManager : MonoBehaviour
@@ -15,6 +15,7 @@ public class GridManager : MonoBehaviour
 
     //public GameObject GameObjectToDestroy;
     public GameObject[,] grid;
+    //public GameObject[] prefabToSpawn;
     public GameObject prefabToSpawnGreen;
     public GameObject prefabToSpawnRed;
     public GameObject prefabToSpawnBlue;
@@ -55,7 +56,7 @@ public class GridManager : MonoBehaviour
         {
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2Int clickedIndex = GetGridIndexFromPosition(mousePosition);
-            Debug.Log($"Mouse clicked at: {mousePosition}, Grid Index: {clickedIndex}");
+            //Debug.Log($"Mouse clicked at: {mousePosition}, Grid Index: {clickedIndex}");
 
             if (AreIndicesValid(clickedIndex, clickedIndex))
             {
@@ -65,23 +66,23 @@ public class GridManager : MonoBehaviour
 
         if (gridUpdateHappened) 
         {
+            MatchFindAndDestroy();
             gridUpdateHappened = false;
         }
 
     }
-
-    void SpawnPreset1()
-    {
-        grid[0, 0] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-        grid[0, 1] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-        grid[0, 2] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
-        grid[1, 0] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-        grid[1, 1] = Instantiate(prefabToSpawnBlue, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-        grid[2, 2] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
-        grid[2, 0] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-        grid[2, 1] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-        grid[2, 2] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
-    }
+    //void SpawnPreset1()
+    //{
+    //    grid[0, 0] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
+    //    grid[0, 1] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
+    //    grid[0, 2] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
+    //    grid[1, 0] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
+    //    grid[1, 1] = Instantiate(prefabToSpawnBlue, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
+    //    grid[2, 2] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
+    //    grid[2, 0] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
+    //    grid[2, 1] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
+    //    grid[2, 2] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
+    //}
 
     void DestroyGrid()
     {
@@ -164,12 +165,12 @@ public class GridManager : MonoBehaviour
     void MatchFindAndDestroy()
     {
         bool allElemsAreNotNull = true;
-        int blue = 0; int green = 0; int yellow = 0; int red = 0;
-        void UpdateC() { }
+        int colorVar = 1;
+        //void UpdateC() { }
 
-        for (int y = 0; y < cols; y++)
+        for (int y = 0; y < rows; y++)
         {
-            for (int x = 0; x < rows; x++)
+            for (int x = 0; x < cols; x++)
             {
                 if (grid[y, x] == null)
                 {
@@ -182,21 +183,23 @@ public class GridManager : MonoBehaviour
         {
 
             //horizontal matches
-            int rowCounter = 1;
-            
-            for (int y = 0; y < cols; y++)
+            //int rowCounter = 1;
+            for (int y = 0; y < rows; y++)
             {
-                for (int x = 0; x < rows; x++)
+                for (int x = 1; x < cols; x++)
                 {
                     Debug.Log("Checking[" + y + "," + x + "]");
-                    if (grid[y, x].tag.Equals("BlueTile"))
+                    
+                    if (grid[y, x].tag.Equals(grid[y, x - 1].tag))
                     {
-                        rowCounter++;
-                        if (rowCounter == 2)
+                        colorVar++;
+                        //rowCounter++;
+                        if (/*rowCounter == 2*/ colorVar == 3)
                         {
                             Debug.Log("------------");
-                            Debug.Log("Match FOund!");
+                            Debug.Log("Match Found!");
                             Debug.Log("[" + y + "," + x + "]");
+                            Debug.Log("and prev 2 by x axis");
                             Debug.Log("------------");
                             //Destroy(grid[y, x - 2]);
                             //Destroy(grid[y, x - 1]);
@@ -207,10 +210,12 @@ public class GridManager : MonoBehaviour
                     }
                     else
                     {
-                        rowCounter = 0;
+                        colorVar = 1;
+                        //rowCounter = 0;
                     }
                 }
-                rowCounter = 0;
+                colorVar = 1;
+                //rowCounter = 0;
             }
 
             //vertical matches
@@ -259,28 +264,29 @@ public class GridManager : MonoBehaviour
         {
             return prefabToSpawnYellow;
         }
+        //return prefabToSpawn[random];
     }
 
     void HandleSelection(Vector2Int clickedIndex)
     {
         if (selectedObject == null)
         {
-            Debug.Log("First object selected grid[" + clickedIndex.x + "," + clickedIndex.y + "]");
-            //Debug.Log("First object selected grid[" + clickedIndex.y + "," + clickedIndex.x + "]");
+            //I don't know why x and y are reversed here but it works
+            //Debug.Log("First object selected grid[" + clickedIndex.x + "," + clickedIndex.y + "]");
             selectedObject = grid[clickedIndex.x, clickedIndex.y];
-            //selectedObject = grid[clickedIndex.y, clickedIndex.x];
         }
         else
         {
-            Debug.Log("Second object selected, swapping " + GetGridIndexFromPosition(selectedObject.transform.position));
+            //Debug.Log("Second object selected, swapping " + GetGridIndexFromPosition(selectedObject.transform.position));
             Vector2Int firstIndex = GetGridIndexFromPosition(selectedObject.transform.position);
             if(ObjectsPositionsAreValidForSwap(firstIndex, clickedIndex))
             {
                 SwapObjects(firstIndex, clickedIndex);
             }
-            selectedObject = null; // Reset selection
+            selectedObject = null;
         }
-        gridUpdateHappened = true;
+        //Debug.Log("gridUpdateHappened = true");
+        //gridUpdateHappened = true;
     }
 
     Vector2Int GetGridIndexFromPosition(Vector2 position)
@@ -307,7 +313,6 @@ public class GridManager : MonoBehaviour
             Debug.LogError("Invalid indices provided for swapping.");
         }
     }
-
 
     private bool AreIndicesValid(Vector2Int index1, Vector2Int index2)
     {
@@ -355,6 +360,7 @@ public class GridManager : MonoBehaviour
         grid[index2.x, index2.y] = obj1;
 
         isSwapping = false;
+        Debug.Log("gridUpdateHappened = true");
         gridUpdateHappened = true;
     }
 
