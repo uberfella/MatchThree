@@ -102,6 +102,7 @@ public class GridManager : MonoBehaviour
             for (int x = 0; x < cols; x++)
             {
                 grid[y, x] = Instantiate(GetRandomPrefab(), spawnPosition, Quaternion.identity);
+                //Debug.Log("Spawned grid[" + y + "," + x + "]");
 
                 spawnPosition.x += 1;
 
@@ -166,7 +167,6 @@ public class GridManager : MonoBehaviour
     {
         bool allElemsAreNotNull = true;
         int colorVar = 1;
-        //void UpdateC() { }
 
         for (int y = 0; y < rows; y++)
         {
@@ -183,65 +183,77 @@ public class GridManager : MonoBehaviour
         {
 
             //horizontal matches
-            //int rowCounter = 1;
             for (int y = 0; y < rows; y++)
             {
-                for (int x = 1; x < cols; x++)
+                for (int x = 0; x < cols; x++)
                 {
                     Debug.Log("Checking[" + y + "," + x + "]");
-                    
-                    if (grid[y, x].tag.Equals(grid[y, x - 1].tag))
+
+                    if (x >= 1 && grid[y, x].tag.Equals(grid[y, x - 1].tag))
                     {
                         colorVar++;
-                        //rowCounter++;
-                        if (/*rowCounter == 2*/ colorVar == 3)
+                        if (colorVar == 3)
                         {
-                            Debug.Log("------------");
-                            Debug.Log("Match Found!");
-                            Debug.Log("[" + y + "," + x + "]");
-                            Debug.Log("and prev 2 by x axis");
-                            Debug.Log("------------");
-                            //Destroy(grid[y, x - 2]);
-                            //Destroy(grid[y, x - 1]);
-                            //Destroy(grid[y, x]);
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //Debug.Log("Match Found!");
+                            //Debug.Log("[" + y + "," + x + "]");
+                            //Debug.Log("and prev 2 by x axis");
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            Destroy(grid[y, x - 2]);
+                            Destroy(grid[y, x - 1]);
+                            Destroy(grid[y, x]);
                             //Destroy(grid[0, 0]);
                             //grid[y, x] = null;
+                            colorVar = 1;
                         }
                     }
                     else
                     {
                         colorVar = 1;
-                        //rowCounter = 0;
                     }
                 }
                 colorVar = 1;
-                //rowCounter = 0;
             }
 
             //vertical matches
             //int colCounter = 1;
-            //for (int x = 0; x < rows; x++)
-            //{
-            //    for (int y = 0; y < cols; y++)
-            //    {
-            //        if (grid[y, x].tag.Equals(grid[y - 1, x].tag))
-            //        {
-            //            colCounter++;
-            //            if (colCounter == 3)
-            //            {
-            //                //return true;
-            //                //Destroy(grid[y - 2, x]);
-            //                //Destroy(grid[y - 1, x]);
-            //                //Destroy(grid[y, x]);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            colCounter = 1;
-            //        }
-            //    }
-            //    colCounter = 1;
-            //}
+            for (int x = 0; x < cols; x++)
+            {
+                for (int y = 0; y < rows; y++)
+                {
+                    Debug.Log("Checking[" + y + "," + x + "]");
+                    if (y >= 1 && grid[y, x].tag.Equals(grid[y - 1, x].tag))
+                    {
+                        colorVar++;
+                        if (colorVar == 3)
+                        {
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //Debug.Log("Match Found!");
+                            //Debug.Log("[" + y + "," + x + "]");
+                            //Debug.Log("and prev 2 by y axis");
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //Debug.Log("------------");
+                            //return true;
+                            Destroy(grid[y - 2, x]);
+                            Destroy(grid[y - 1, x]);
+                            Destroy(grid[y, x]);
+                            colorVar = 1;
+                        }
+                    }
+                    else
+                    {
+                        colorVar = 1;
+                    }
+                }
+                colorVar = 1;
+            }
         }
     }
 

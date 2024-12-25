@@ -523,7 +523,7 @@ MonoBehaviour:
   prefabToSpawnBlue: {fileID: 2037460409315603598, guid: 3aabb478ae6cd6d46bcdab0d4a455b58, type: 3}
   prefabToSpawnYellow: {fileID: 7062131863979127009, guid: a2ccc7adc0d2f82469e6774c21b94417, type: 3}
   rows: 3
-  cols: 4
+  cols: 5
   spawnPosition: {x: 0.5, y: 0.5}
   swapSpeed: 5
 --- !u!1 &861116781
