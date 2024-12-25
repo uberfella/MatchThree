@@ -31,12 +31,13 @@ public class GridManager : MonoBehaviour
     public float swapSpeed = 5f;
 
     private bool gridUpdateHappened = false;
+    private bool gridDestroyHappened = false;
 
     void Start()
     {
 
         //grid = new GameObject[cols, rows];
-        grid = new GameObject[rows, cols];
+        grid = new GameObject[rows + 1, cols];
 
         do
         {
@@ -70,6 +71,12 @@ public class GridManager : MonoBehaviour
             gridUpdateHappened = false;
         }
 
+        if (gridDestroyHappened)
+        {
+            spawnUpperPrefabs();
+            gridDestroyHappened = false;
+        }
+
     }
     //void SpawnPreset1()
     //{
@@ -97,18 +104,27 @@ public class GridManager : MonoBehaviour
 
     void PopulateGrid()
     {
-        for (int y = 0; y < rows; y++)
+        for (int y = 0; y < rows + 1; y++)
         {
             for (int x = 0; x < cols; x++)
             {
-                grid[y, x] = Instantiate(GetRandomPrefab(), spawnPosition, Quaternion.identity);
-                //Debug.Log("Spawned grid[" + y + "," + x + "]");
 
-                spawnPosition.x += 1;
+                if (y < rows)
+                {
+                    grid[y, x] = Instantiate(GetRandomPrefab(), spawnPosition, Quaternion.identity);
+                    //Debug.Log("Spawned grid[" + y + "," + x + "]");
 
+                    spawnPosition.x += 1;
+                    //Debug.Log("spawnPosition.x = " + spawnPosition.x);
+                }
+                else 
+                {
+                    //grid[y, x] = null;
+                }
             }
             spawnPosition.x = 0.5f;
             spawnPosition.y += 1;
+            //Debug.Log("spawnPosition.y = " + spawnPosition.y);
         }
         spawnPosition.y = 0.5f;
     }
@@ -209,6 +225,7 @@ public class GridManager : MonoBehaviour
                             //Destroy(grid[0, 0]);
                             //grid[y, x] = null;
                             colorVar = 1;
+                            gridDestroyHappened = true;
                         }
                     }
                     else
@@ -245,6 +262,7 @@ public class GridManager : MonoBehaviour
                             Destroy(grid[y - 1, x]);
                             Destroy(grid[y, x]);
                             colorVar = 1;
+                            gridDestroyHappened = true;
                         }
                     }
                     else
@@ -255,6 +273,21 @@ public class GridManager : MonoBehaviour
                 colorVar = 1;
             }
         }
+    }
+
+    void spawnUpperPrefabs() 
+    { 
+        float spawnPosX = 1.5f;
+        float spawnPosY = rows + 1.5f;
+        Vector2 spawnPositionAdditional = new Vector2(spawnPosX, spawnPosY);
+        int indexY = rows;
+        //int indexX = 0;
+        for (int q = 0; q < cols; q++)
+        {
+            grid[indexY, q] = Instantiate(GetRandomPrefab(), spawnPositionAdditional, Quaternion.identity);
+            spawnPositionAdditional.x = spawnPosX + (q + 1);
+        }
+        
     }
 
     GameObject GetRandomPrefab()
