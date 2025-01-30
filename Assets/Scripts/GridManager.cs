@@ -368,13 +368,13 @@ public class GridManager : MonoBehaviour
             SpriteRenderer spriteRenderer = newPrefab.GetComponent<SpriteRenderer>();
             if (spriteRenderer != null)
             {
-                spriteRenderer.enabled = false; // Turn off visibility
+                spriteRenderer.enabled = true; // Turn off visibility
             }
 
             grid[indexY, q] = newPrefab;
             spawnPositionAdditional.x = spawnPosX + (q + 1);
         }
-        
+        Debug.Log("blocks have spawned");
     }
 
     private System.Collections.IEnumerator DropBlock(int y, int x/*Vector2Int index*//*, Vector2 newPosition*/)

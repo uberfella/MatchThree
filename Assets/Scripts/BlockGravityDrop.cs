@@ -24,7 +24,7 @@ public class BlockGravityDrop : MonoBehaviour
             GameObject obj = gridManager.grid[0, 0];
             if (obj != null)
             {
-                Debug.Log("Found object at (0,0): " + obj.name);
+                //Debug.Log("Found object at (0,0): " + obj.name);
             }
         }
         else
@@ -52,6 +52,7 @@ public class BlockGravityDrop : MonoBehaviour
                 if (gridManager.isAlive[y, x] == false) 
                 {
                     Debug.Log("Null grid element detected at [" + y + "," + x + "]");
+                    StartCoroutine(    DropBlock(y,x)); 
                 }
             }
         }
@@ -63,6 +64,7 @@ public class BlockGravityDrop : MonoBehaviour
 
         //getting reference to the block GameObject
         GameObject obj = gridManager.grid[y + 1, x];
+        //Debug.Log("Found object at (y + 1,x): " + obj.name);
 
         //getting GameObject position
         Vector3 startPos = obj.transform.position;

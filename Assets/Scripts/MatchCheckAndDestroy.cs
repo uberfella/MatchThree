@@ -26,7 +26,7 @@ public class MatchCheckAndDestroy : MonoBehaviour
             GameObject obj = gridManager.grid[0, 0];
             if (obj != null)
             {
-                Debug.Log("Found object at (0,0): " + obj.name);
+                //Debug.Log("Found object at (0,0): " + obj.name);
             }
         }
         else
