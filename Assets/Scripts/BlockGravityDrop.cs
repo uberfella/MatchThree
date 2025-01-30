@@ -32,7 +32,8 @@ public class BlockGravityDrop : MonoBehaviour
             Debug.LogError("GridManager or grid is not set up!");
         }
 
-        InvokeRepeating(nameof(CheckGridForNull), 2.0f, 5f);
+        //InvokeRepeating(nameof(CheckGridForNull), 2.0f, 5f);
+        Invoke(nameof(CheckGridForNull), 7.0f);
     }
 
     // Update is called once per frame
