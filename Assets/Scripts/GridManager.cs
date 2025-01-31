@@ -7,6 +7,8 @@ using static UnityEngine.Rendering.VolumeComponent;
 /*
  TODO 
 one prefab array instead of separate prefabs
+match 4, match 5
+do not allow player to select invisible blocks at the top
  */
 
 public class GridManager : MonoBehaviour
@@ -93,7 +95,7 @@ public class GridManager : MonoBehaviour
 
         if (gridDestroyHappened)
         {
-            SpawnUpperPrefabs();
+            SpawnNewBlockAtTheTop();
             gridDestroyHappened = false;
         }
 
@@ -353,8 +355,8 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void SpawnUpperPrefabs() 
-    { 
+    void SpawnNewBlockAtTheTop() 
+    {
         float spawnPosX = 0.5f;
         float spawnPosY = rows + 0.5f;
         Vector2 spawnPositionAdditional = new Vector2(spawnPosX, spawnPosY);
@@ -362,16 +364,16 @@ public class GridManager : MonoBehaviour
         //int indexX = 0;
         for (int q = 0; q < cols; q++)
         {
-            GameObject newPrefab = Instantiate(GetRandomPrefab(), spawnPositionAdditional, Quaternion.identity);
+            GameObject newBlock = Instantiate(GetRandomPrefab(), spawnPositionAdditional, Quaternion.identity);
 
             // Make it invisible by disabling the SpriteRenderer
-            SpriteRenderer spriteRenderer = newPrefab.GetComponent<SpriteRenderer>();
+            SpriteRenderer spriteRenderer = newBlock.GetComponent<SpriteRenderer>();
             if (spriteRenderer != null)
             {
-                spriteRenderer.enabled = true; // Turn off visibility
+                spriteRenderer.enabled = true; // Turn off visibility'
             }
 
-            grid[indexY, q] = newPrefab;
+            grid[indexY, q] = newBlock;
             spawnPositionAdditional.x = spawnPosX + (q + 1);
         }
         Debug.Log("blocks have spawned");

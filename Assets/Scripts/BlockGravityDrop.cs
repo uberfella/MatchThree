@@ -34,6 +34,7 @@ public class BlockGravityDrop : MonoBehaviour
 
         //InvokeRepeating(nameof(CheckGridForNull), 2.0f, 5f);
         Invoke(nameof(CheckGridForNull), 7.0f);
+        //Invoke(nameof(CheckGridForNull), 9.0f);
     }
 
     // Update is called once per frame

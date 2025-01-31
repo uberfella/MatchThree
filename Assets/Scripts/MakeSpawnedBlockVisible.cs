@@ -13,11 +13,13 @@ public class MakeSpawnedBlockVisible : MonoBehaviour
 
         if (spriteRenderer != null)
         {
-            spriteRenderer.enabled = false; // Initially make it invisible
+            spriteRenderer.enabled = false; 
         }
 
         // Get the row threshold dynamically
-        visibilityThresholdY = GridManager.rows;
+        visibilityThresholdY = GridManager.rows - 0.5f;
+        //Debug.Log("visibilityThresholdY = " + visibilityThresholdY);
+        //Debug.Log("transform.position.y = " + transform.position.y);
 
         float spawnPosY = GridManager.rows;
         //Vector2 spawnPositionAdditional = new Vector2(spawnPosX, spawnPosY);
