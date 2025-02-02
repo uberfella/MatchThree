@@ -26,7 +26,6 @@ public class GridManager : MonoBehaviour
     public GameObject prefabToSpawnYellow;
     public static int rows = 3;
     public static int cols = 5;
-    private DetectClick currentSelection = null;
 
     public Vector2 spawnPosition;
 
@@ -55,84 +54,34 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
-        //InvokeRepeating("CheckGridForNull", 2.0f, 5f);
 
-        //grid = new GameObject[cols, rows];
-        //grid = new GameObject[rows + 1, cols];
-
-        //do
-        //{
-        //    if (grid[0, 0] != null)
-        //    {
-        //        DestroyGrid();
-        //    }
-        //    PopulateGrid();
-        //}
-        //while (MatchFound() == true);
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2Int clickedIndex = GetGridIndexFromPosition(mousePosition);
-            //Debug.Log($"Mouse clicked at: {mousePosition}, Grid Index: {clickedIndex}");
 
             if (AreIndicesValid(clickedIndex, clickedIndex))
             {
                 HandleSelection(clickedIndex);
             }
         }
-
-        //moved to separate script
-        //if (gridUpdateHappened) 
+            
+        //if (Input.GetKeyDown(KeyCode.F))
         //{
-        //    MatchFindAndDestroy();
-        //    gridUpdateHappened = false;
+        //    SpawnNewBlockAtTheTop();
         //}
+        SpawnNewBlockAtTheTop();
 
-        if (gridDestroyHappened)
-        {
-            SpawnNewBlockAtTheTop();
-            gridDestroyHappened = false;
-        }
-
-        //CheckGridForNull();
+        /*
+             
+         
+        */
 
     }
-
-    private void CheckGridForNull()
-    {
-
-        for (int y = 0; y < rows; y++)
-        {
-            for (int x = 0; x < cols; x++)
-            {
-
-                if (isAlive[y, x] == false)
-                {
-                    Debug.Log("Null grid element detected at [" + y + "," + x + "]");
-                }
-
-                //Debug.Log("grid element status at [" + y + "," + x + "] is " + isAlive[y, x]);
-            }
-        }
-    }
-
-    //void SpawnPreset1()
-    //{
-    //    grid[0, 0] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-    //    grid[0, 1] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-    //    grid[0, 2] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
-    //    grid[1, 0] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-    //    grid[1, 1] = Instantiate(prefabToSpawnBlue, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-    //    grid[2, 2] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
-    //    grid[2, 0] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-    //    grid[2, 1] = Instantiate(prefabToSpawnGreen, spawnPosition, Quaternion.identity); spawnPosition.x += 1;
-    //    grid[2, 2] = Instantiate(prefabToSpawnRed, spawnPosition, Quaternion.identity); spawnPosition.x = 0.5f; spawnPosition.y += 1;
-    //}
 
     void DestroyGrid()
     {
@@ -147,8 +96,6 @@ public class GridManager : MonoBehaviour
 
     void PopulateGrid()
     {
-
-
         for (int y = 0; y < rows + 1; y++)
         {
             for (int x = 0; x < cols; x++)
@@ -226,195 +173,22 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
-    //void MatchFindAndDestroy()
-    //{
-    //    bool allElemsAreNotNull = true;
-    //    int colorVar = 1;
-
-    //    for (int y = 0; y < rows; y++)
-    //    {
-    //        for (int x = 0; x < cols; x++)
-    //        {
-    //            if (grid[y, x] == null)
-    //            {
-    //                allElemsAreNotNull = false;
-    //            }
-    //        }
-    //    }
-
-    //    if (allElemsAreNotNull)
-    //    {
-
-    //        //horizontal matches
-    //        for (int y = 0; y < rows; y++)
-    //        {
-    //            for (int x = 0; x < cols; x++)
-    //            {
-    //                //Debug.Log("Checking[" + y + "," + x + "]");
-
-    //                if (x >= 1 && grid[y, x].tag.Equals(grid[y, x - 1].tag))
-    //                {
-    //                    colorVar++;
-    //                    if (colorVar == 3)
-    //                    {
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("Match Found!");
-    //                        //Debug.Log("[" + y + "," + x + "]");
-    //                        //Debug.Log("and prev 2 by x axis");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        Destroy(grid[y, x - 2]);
-    //                        StartCoroutine(DropBlock(y, x - 2));
-    //                        Destroy(grid[y, x - 1]);
-    //                        StartCoroutine(DropBlock(y, x - 1));
-    //                        Destroy(grid[y, x]);
-    //                        StartCoroutine(DropBlock(y, x));
-    //                        //Destroy(grid[0, 0]);
-    //                        //grid[y, x] = null;
-    //                        colorVar = 1;
-    //                        gridDestroyHappened = true;
-    //                    }
-    //                }
-    //                else
-    //                {
-    //                    colorVar = 1;
-    //                }
-    //            }
-    //            colorVar = 1;
-    //        }
-
-    //        //vertical matches
-    //        //int colCounter = 1;
-    //        for (int x = 0; x < cols; x++)
-    //        {
-    //            for (int y = 0; y < rows; y++)
-    //            {
-    //                //Debug.Log("Checking[" + y + "," + x + "]");
-    //                if (y >= 1 && grid[y, x].tag.Equals(grid[y - 1, x].tag))
-    //                {
-    //                    colorVar++;
-    //                    if (colorVar == 3)
-    //                    {
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("Match Found!");
-    //                        //Debug.Log("[" + y + "," + x + "]");
-    //                        //Debug.Log("and prev 2 by y axis");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //Debug.Log("------------");
-    //                        //return true;
-    //                        Destroy(grid[y - 2, x]);
-    //                        Destroy(grid[y - 1, x]);
-    //                        Destroy(grid[y, x]);
-    //                        colorVar = 1;
-    //                        gridDestroyHappened = true;
-    //                    }
-    //                }
-    //                else
-    //                {
-    //                    colorVar = 1;
-    //                }
-    //            }
-    //            colorVar = 1;
-    //        }
-    //    }
-    //}
-    
-    void DropUpperGameObject(int y, int x)
-    {
-        //getting reference to the block GameObject
-        GameObject obj1 = grid[y + 1, x];
-
-        //getting GameObject position
-        Vector3 startPos1 = obj1.transform.position;
-
-        //getting new position
-        //Vector3 destinationPos1 = new Vector3(obj1.transform.position.x + 1, obj1.transform.position.y, obj1.transform.position.z);
-        Vector3 finishPos = new Vector3(obj1.transform.position.x, obj1.transform.position.y - 1, obj1.transform.position.z);
-
-        // Ensure we're within bounds and there is a GameObject above the current position
-        if (y + 1 < grid.GetLength(0) && grid[y + 1, x] != null)
-        {
-            // Move the upper GameObject to the current position
-            grid[y, x] = obj1;
-            //grid[y + 1, x] = null;
-
-            // Optionally, update the GameObject's position in the scene
-            //Vector3 newPosition = new Vector3(x, y, 0); // Adjust z-axis if necessary
-            obj1.transform.position = finishPos;
-        }
-        else
-        {
-            // No upper GameObject exists or out of bounds
-            //grid[y, x] = null;
-        }
-    }
-
-    void SpawnNewBlockAtTheTop() 
+    void SpawnNewBlockAtTheTop()
     {
         float spawnPosX = 0.5f;
         float spawnPosY = rows + 0.5f;
         Vector2 spawnPositionAdditional = new Vector2(spawnPosX, spawnPosY);
         int indexY = rows;
-        //int indexX = 0;
         for (int q = 0; q < cols; q++)
         {
-            GameObject newBlock = Instantiate(GetRandomPrefab(), spawnPositionAdditional, Quaternion.identity);
-
-            // Make it invisible by disabling the SpriteRenderer
-            SpriteRenderer spriteRenderer = newBlock.GetComponent<SpriteRenderer>();
-            if (spriteRenderer != null)
+            if (isAlive[indexY, q] == false)
             {
-                spriteRenderer.enabled = true; // Turn off visibility'
+                Debug.Log("isAlive[" + indexY + "," + q+ "] == " + isAlive[indexY, q]);
+                grid[indexY, q] = Instantiate(GetRandomPrefab(), spawnPositionAdditional, Quaternion.identity);
+                isAlive[indexY, q] = true;
             }
-
-            grid[indexY, q] = newBlock;
             spawnPositionAdditional.x = spawnPosX + (q + 1);
         }
-        Debug.Log("blocks have spawned");
-    }
-
-    private System.Collections.IEnumerator DropBlock(int y, int x/*Vector2Int index*//*, Vector2 newPosition*/)
-    {
-        //isMoving = true;
-
-        //getting reference to the block GameObject
-        GameObject obj = grid[y + 1, x];
-
-        //getting GameObject position
-        Vector3 startPos = obj.transform.position;
-
-        //getting new position
-        //Vector3 destinationPos1 = new Vector3(obj1.transform.position.x + 1, obj1.transform.position.y, obj1.transform.position.z);
-        Vector3 finishPos = new Vector3(obj.transform.position.x, obj.transform.position.y - 1, obj.transform.position.z);
-
-        float progress = 0f;
-        while (progress < 1f)
-        {
-            progress += Time.deltaTime * swapSpeed;
-            obj.transform.position = Vector3.Lerp(startPos, finishPos, progress);
-            yield return null;
-        }
-
-        grid[y, x] = obj;
-
-        obj.transform.position = finishPos;
-
-        // Update the grid to reflect the new position
-        //grid[x, y] = null;
-
-        // Calculate new grid position (if necessary)
-        //Vector2Int newGridIndex = GetGridIndexFromPosition(newPosition);
-        //grid[newGridIndex.x, newGridIndex.y] = obj;
-
-        //isMoving = false;
-        //Debug.Log("gridUpdateHappened = true");
-        gridUpdateHappened = true;
     }
 
     GameObject GetRandomPrefab()
@@ -444,12 +218,12 @@ public class GridManager : MonoBehaviour
         if (selectedObject == null)
         {
             //I don't know why x and y are reversed here but it works
-            //Debug.Log("First object selected grid[" + clickedIndex.x + "," + clickedIndex.y + "]");
+            Debug.Log("First object selected grid[" + clickedIndex.x + "," + clickedIndex.y + "], isAlive status:" + isAlive[clickedIndex.x, clickedIndex.y]);
             selectedObject = grid[clickedIndex.x, clickedIndex.y];
         }
         else
         {
-            //Debug.Log("Second object selected, swapping " + GetGridIndexFromPosition(selectedObject.transform.position));
+            Debug.Log("Second object selected, swapping " + GetGridIndexFromPosition(selectedObject.transform.position));
             Vector2Int firstIndex = GetGridIndexFromPosition(selectedObject.transform.position);
             if(ObjectsPositionsAreValidForSwap(firstIndex, clickedIndex))
             {
@@ -457,8 +231,6 @@ public class GridManager : MonoBehaviour
             }
             selectedObject = null;
         }
-        //Debug.Log("gridUpdateHappened = true");
-        //gridUpdateHappened = true;
     }
 
     Vector2Int GetGridIndexFromPosition(Vector2 position)
@@ -532,7 +304,6 @@ public class GridManager : MonoBehaviour
         grid[index2.x, index2.y] = obj1;
 
         isSwapping = false;
-        //Debug.Log("gridUpdateHappened = true");
         gridUpdateHappened = true;
     }
 

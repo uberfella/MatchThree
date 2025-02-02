@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI.Table;
 
@@ -6,10 +7,7 @@ public class BlockGravityDrop : MonoBehaviour
     public GameObject tileBlue;
     private GridManager gridManager;
     private GameObject[,] grid;
-    //private int cols;
-    //private int rows;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
 
@@ -31,16 +29,16 @@ public class BlockGravityDrop : MonoBehaviour
         {
             Debug.LogError("GridManager or grid is not set up!");
         }
-
-        //InvokeRepeating(nameof(CheckGridForNull), 2.0f, 5f);
-        Invoke(nameof(CheckGridForNull), 7.0f);
-        //Invoke(nameof(CheckGridForNull), 9.0f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //CheckGridForNull();
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            CheckGridForNull();
+        }
+        
     }
 
     private void CheckGridForNull()
@@ -50,18 +48,22 @@ public class BlockGravityDrop : MonoBehaviour
         {
             for (int x = 0; x < GridManager.cols; x++)
             {
-
-                if (gridManager.isAlive[y, x] == false) 
+                if (gridManager.isAlive[y, x] == false &&
+                    gridManager.isAlive[y + 1, x] == true)
                 {
                     Debug.Log("Null grid element detected at [" + y + "," + x + "]");
-                    StartCoroutine(    DropBlock(y,x)); 
+                    StartCoroutine(DropBlock(y, x));
+                    GridManager.gridUpdateHappened = true;
                 }
             }
         }
+
     }
 
     private System.Collections.IEnumerator DropBlock(int y, int x)
     {
+        if (gridManager.grid[y + 1, x] == null) yield break;
+        //if (gridManager.grid[y, x] != null) yield break;
         //isMoving = true;
 
         //getting reference to the block GameObject
@@ -83,9 +85,9 @@ public class BlockGravityDrop : MonoBehaviour
             yield return null;
         }
 
-        gridManager.grid[y, x] = obj;
 
-        obj.transform.position = finishPos;
+
+        //obj.transform.position = finishPos;
 
         // Update the grid to reflect the new position
         //grid[x, y] = null;
@@ -94,7 +96,10 @@ public class BlockGravityDrop : MonoBehaviour
         //Vector2Int newGridIndex = GetGridIndexFromPosition(newPosition);
         //grid[newGridIndex.x, newGridIndex.y] = obj;
 
-        //isMoving = false;
+        gridManager.grid[y, x] = obj;
+        gridManager.isAlive[y, x] = true;
+        gridManager.isAlive[y + 1, x] = false;
+
         Debug.Log("gridUpdateHappened = true");
         GridManager.gridUpdateHappened = true;
     }

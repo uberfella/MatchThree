@@ -13,7 +13,7 @@ public class MakeSpawnedBlockVisible : MonoBehaviour
 
         if (spriteRenderer != null)
         {
-            spriteRenderer.enabled = false; 
+            spriteRenderer.enabled = true; 
         }
 
         // Get the row threshold dynamically
