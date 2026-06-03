@@ -13,8 +13,8 @@ do not allow player to select invisible blocks at the top
 
 public class GridManager : MonoBehaviour
 {
-    private float timer = 0f;
-    private float interval = 6f;
+    //private float timer = 0f;
+    //private float interval = 6f;
 
     //public GameObject GameObjectToDestroy;
     public GameObject[,] grid;

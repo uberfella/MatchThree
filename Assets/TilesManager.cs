@@ -2,13 +2,15 @@ using UnityEngine;
 
 public class TilesManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private TileType[,] grid;
+    private static int rows = 3;
+    private static int cols = 5;
+
     void Start()
     {
-        
+        grid = new TileType[rows + 1, cols];
     }
 
-    // Update is called once per frame
     void Update()
     {
         
