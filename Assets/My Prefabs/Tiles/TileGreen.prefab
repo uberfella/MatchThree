@@ -149,5 +149,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   x: 0
   y: 0
-  type: 0
+  type: 2
   isMatched: 0

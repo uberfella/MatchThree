@@ -148,6 +148,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 686e211eaa69c2c448cc73ada9da046c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prefabsToSpawn:
+  - {fileID: 2037460409315603598, guid: 0557bf964d7169a4da704d8273b2b9f6, type: 3}
+  - {fileID: 1341087878129622572, guid: c7cb27550edb29740b300deb7cf11694, type: 3}
+  - {fileID: 7062131863979127009, guid: 8eb951821e3c1ca4daaa8851fd7f53a1, type: 3}
+  - {fileID: 7062131863979127009, guid: 2f2da89121250ae4c9c435956c0dda34, type: 3}
 --- !u!4 &318320445
 Transform:
   m_ObjectHideFlags: 0
