@@ -7,3 +7,8 @@ public enum TileType
     Green,
     Yellow
 }
+
+public class Cell
+{
+    public TileType Type;
+}

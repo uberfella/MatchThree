@@ -1,19 +1,22 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class TilesManager : MonoBehaviour
 {
-    public GameObject[] prefabsToSpawn;
-    private Tile[,] grid;
-    private static int rows = 3;
-    private static int cols = 5;
-    private Vector2 spawnPosition;
+    private Cell[,] board;
+    private TileView[,] views;
+    private int rows = 3;
+    private int cols = 5;
+    //private Vector2 spawnPosition;
 
     void Start()
     {
-        spawnPosition.x = 0.5f;
-        spawnPosition.y = 0.5f;
-        grid = new Tile[rows + 1, cols];
-        PopulateGrid();
+        //spawnPosition.x = 0.5f;
+        //spawnPosition.y = 0.5f;
+        board = new Cell[cols, rows];
+        views = new TileView[cols, rows];
+        PopulateBoard();
+        UpdateVisuals();
     }
 
     void Update()
@@ -21,35 +24,53 @@ public class TilesManager : MonoBehaviour
         
     }
 
-    void PopulateGrid()
+    void PopulateBoard()
     {
-        for (int y = 0; y < rows + 1; y++)
+        for (int y = 0; y < cols; y++)
         {
-            for (int x = 0; x < cols; x++)
+            for (int x = 0; x < rows; x++)
             {
 
-                if (y < rows)
+                //if (y < rows)
                 {
                     //grid[y, x] = Instantiate(GetRandomPrefab(), spawnPosition, Quaternion.identity);
-                    //grid[y, x] = Instantiate(prefabsToSpawn[0], spawnPosition, Quaternion.identity);
-                    GameObject newTile = Instantiate(prefabsToSpawn[0], spawnPosition, Quaternion.identity);
-                    grid[y, x] = newTile;
-                    //Debug.Log("Spawned grid[" + y + "," + x + "]");
+                    //grid[y, x] = newTile;
 
-                    spawnPosition.x += 1;
+                    board[y, x] = new Cell();
+                    //board[y, x].Type = TileType.Red;
+                    board[y, x].Type = (TileType)UnityEngine.Random.Range(0, 4);
+                    //Debug.Log("Spawned board[" + y + "," + x + "]" + ", type = "+ board[y, x].Type);
+                    //spawnPosition.x += 1;
                     //Debug.Log("spawnPosition.x = " + spawnPosition.x);
 
                     //isAlive[y, x] = true;
                 }
-                else
-                {
-                    //grid[y, x] = null;
-                }
+                //else
+                //{
+                //    //grid[y, x] = null;
+                //}
             }
-            spawnPosition.x = 0.5f;
-            spawnPosition.y += 1;
+            //spawnPosition.x = 0.5f;
+            //spawnPosition.y += 1;
             //Debug.Log("spawnPosition.y = " + spawnPosition.y);
+            Debug.Log(" ");
         }
-        spawnPosition.y = 0.5f;
+        //spawnPosition.y = 0.5f;
+    }
+
+    void UpdateVisuals()
+    {
+        for (int x = 0; x < rows; x++)
+        {
+            for (int y = 0; y < cols; y++)
+            {
+                if (views[y, x] == null)
+                    Debug.Log($"views[{y},{x}] is null");
+
+                if (board[y, x] == null)
+                    Debug.Log($"board[{y},{x}] is null");
+                views[y, x].SetSprite(board[y, x].Type);
+            }
+        }
     }
 }
