@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    public TileType type;
+    //public TileType type;
     //public bool isMatched;
 
     public int X;

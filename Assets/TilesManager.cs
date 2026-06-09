@@ -25,7 +25,11 @@ public class TilesManager : MonoBehaviour
 
     void Update()
     {
-        
+        if (Input.GetMouseButtonDown(0)) 
+        {
+            //Debug.Log("this is " + board[YieldInstruction,]);
+        }
+
     }
 
     void PopulateBoard()
@@ -73,6 +77,10 @@ public class TilesManager : MonoBehaviour
             for (int y = 0; y < cols; y++)
             {
                 Tile tile = Instantiate(tilePrefab);
+
+                tile.X = x;
+                tile.Y = y;
+
                 tile.transform.position = new Vector3(
                     x,
                     y,
@@ -89,13 +97,23 @@ public class TilesManager : MonoBehaviour
         {
             for (int y = 0; y < cols; y++)
             {
+                //if (views[y, x] == null)
+                //    Debug.Log($"views[{y},{x}] is null");
 
-                if (views[y, x] == null)
-                    Debug.Log($"views[{y},{x}] is null");
-
-                if (board[y, x] == null)
-                    Debug.Log($"board[{y},{x}] is null");
+                //if (board[y, x] == null)
+                //    Debug.Log($"board[{y},{x}] is null");
                 views[y, x].SetSprite(board[y, x].Type);
+            }
+        }
+    }
+
+    void UpdateTileType()
+    {
+        for (int x = 0; x < rows; x++)
+        {
+            for (int y = 0; y < cols; y++)
+            {
+
             }
         }
     }
