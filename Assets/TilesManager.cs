@@ -25,9 +25,8 @@ public class TilesManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) 
+        //if (Input.GetMouseButtonDown(0)) 
         {
-            //Debug.Log("this is " + board[YieldInstruction,]);
         }
 
     }
@@ -78,8 +77,7 @@ public class TilesManager : MonoBehaviour
             {
                 Tile tile = Instantiate(tilePrefab);
 
-                tile.X = x;
-                tile.Y = y;
+                tile.Init(x, y, this);
 
                 tile.transform.position = new Vector3(
                     x,
@@ -107,14 +105,25 @@ public class TilesManager : MonoBehaviour
         }
     }
 
-    void UpdateTileType()
+    public void OnTileClicked(int x, int y, GameObject gameObject)
     {
-        for (int x = 0; x < rows; x++)
-        {
-            for (int y = 0; y < cols; y++)
-            {
+        //Cell cell = board[y, x];
+        Tile tile = views[y, x];
+        Debug.Log("this is " + tile.X + " " + tile.Y);
 
-            }
+        //Destroy(tile);
+        //
+
+
+        IDestroyable target = gameObject.GetComponent<IDestroyable>();
+
+        if (target != null)
+        {
+            target.Destroy();
+            Destroy(gameObject);
         }
+        board[y, x] = null;
+
     }
+
 }
