@@ -37,36 +37,15 @@ public class TilesManager : MonoBehaviour
         {
             for (int x = 0; x < rows; x++)
             {
+                
+                board[y, x] = new Cell();
 
-                //if (y < rows)
-                {
-                    //grid[y, x] = Instantiate(GetRandomPrefab(), spawnPosition, Quaternion.identity);
-                    //grid[y, x] = newTile;
+                board[y, x].Type = (TileType)UnityEngine.Random.Range(0, 4);
 
-                    board[y, x] = new Cell();
 
-                    //board[y, x].Type = TileType.Red;
-                    board[y, x].Type = (TileType)UnityEngine.Random.Range(0, 4);
-
-                    //Tile tile = Instantiate(Type);
-
-                    //Debug.Log("Spawned board[" + y + "," + x + "]" + ", type = "+ board[y, x].Type);
-                    //spawnPosition.x += 1;
-                    //Debug.Log("spawnPosition.x = " + spawnPosition.x);
-
-                    //isAlive[y, x] = true;
-                }
-                //else
-                //{
-                //    //grid[y, x] = null;
-                //}
+                
             }
-            //spawnPosition.x = 0.5f;
-            //spawnPosition.y += 1;
-            //Debug.Log("spawnPosition.y = " + spawnPosition.y);
-            //Debug.Log(" ");
         }
-        //spawnPosition.y = 0.5f;
     }
 
     void InstantiateTiles()
@@ -107,6 +86,8 @@ public class TilesManager : MonoBehaviour
 
     public void OnTileClicked(int x, int y, GameObject gameObject)
     {
+        Debug.Log("before - board[y, x] = " + board[y, x]);
+
         //Cell cell = board[y, x];
         Tile tile = views[y, x];
         Debug.Log("this is " + tile.X + " " + tile.Y);
@@ -123,7 +104,21 @@ public class TilesManager : MonoBehaviour
             Destroy(gameObject);
         }
         board[y, x] = null;
+        Debug.Log("board[y, x] = " + board[y, x] );
+        Debug.Log(" "  );
 
     }
 
+    private void OnBoardChanged()
+    {
+
+    }
+
+    private void CellGoesDownOneTile()
+    {
+        //if (board[y, x] < 0 || Y < 0)
+        {
+            return;
+        }
+    }
 }
