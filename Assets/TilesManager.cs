@@ -43,7 +43,6 @@ public class TilesManager : MonoBehaviour
                 board[y, x].Type = (TileType)UnityEngine.Random.Range(0, 4);
 
 
-                
             }
         }
     }

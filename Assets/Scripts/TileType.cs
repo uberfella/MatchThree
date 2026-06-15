@@ -11,26 +11,12 @@ public enum TileType
 public class Cell
 {
     public TileType Type;
+    public bool CanFall = true;
+    public bool CanBeMatched = true;
 
-    public int X;
-    public int Y;
-
-    private TilesManager tilesManager;
-
-
-    public void Init(int x, int y, TilesManager manager)
+    public bool WantsToGoDown()
     {
-        X = x;
-        Y = y;
-        tilesManager = manager;
+        return true;
     }
 
-    public void TileGoesDownOneCell()
-    {
-        if (X < 0 || Y < 0)
-        {
-            return;
-        }
-        X--;
-    }
 }
