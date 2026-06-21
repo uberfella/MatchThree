@@ -5,9 +5,9 @@ public class TilesManager : MonoBehaviour
 {
     private Cell[,] board;
     //private TileView[,] views;
-    private Tile [,] views;
-    private int rows = 3;
-    private int cols = 5;
+    private Tile[,] views;
+    private int cols = 3;
+    private int rows = 5;
     //private Vector2 spawnPosition;
     [SerializeField] private Tile tilePrefab;
 
@@ -16,8 +16,7 @@ public class TilesManager : MonoBehaviour
         //spawnPosition.x = 0.5f;
         //spawnPosition.y = 0.5f;
         board = new Cell[cols, rows];
-        //views = new TileView[cols, rows];
-        views = new Tile [cols, rows];
+        views = new Tile[cols, rows];
         PopulateBoard();
         InstantiateTiles();
         UpdateVisuals();
@@ -33,14 +32,16 @@ public class TilesManager : MonoBehaviour
 
     void PopulateBoard()
     {
-        for (int y = 0; y < cols; y++)
+        for (int x = 0; x < cols; x++)
         {
-            for (int x = 0; x < rows; x++)
+            for (int y = 0; y < rows; y++)
             {
-                
-                board[y, x] = new Cell();
 
-                board[y, x].Type = (TileType)UnityEngine.Random.Range(0, 4);
+                Cell cell = new Cell();
+
+                board[x, y] = cell;
+
+                board[x, y].Type = (TileType)UnityEngine.Random.Range(0, 4);
 
 
             }
@@ -49,9 +50,9 @@ public class TilesManager : MonoBehaviour
 
     void InstantiateTiles()
     {
-        for (int x = 0; x < rows; x++)
+        for (int x = 0; x < cols; x++)
         {
-            for (int y = 0; y < cols; y++)
+            for (int y = 0; y < rows; y++)
             {
                 Tile tile = Instantiate(tilePrefab);
 
@@ -62,55 +63,56 @@ public class TilesManager : MonoBehaviour
                     y,
                     0);
 
-                views[y, x] = tile;
+                views[x, y] = tile;
             }
         }
     }
 
     void UpdateVisuals()
     {
-        for (int x = 0; x < rows; x++)
+        for (int x = 0; x < cols; x++)
         {
-            for (int y = 0; y < cols; y++)
+            for (int y = 0; y < rows; y++)
             {
                 //if (views[y, x] == null)
                 //    Debug.Log($"views[{y},{x}] is null");
 
                 //if (board[y, x] == null)
                 //    Debug.Log($"board[{y},{x}] is null");
-                views[y, x].SetSprite(board[y, x].Type);
+                views[x, y].SetSprite(board[x, y].Type);
             }
         }
     }
 
     public void OnTileClicked(int x, int y, GameObject gameObject)
     {
-        Debug.Log("before - board[y, x] = " + board[y, x]);
+        Debug.Log("before - board[y, x] = " + board[x, y]);
 
         //Cell cell = board[y, x];
-        Tile tile = views[y, x];
+        Tile tile = views[x, y];
         Debug.Log("this is " + tile.X + " " + tile.Y);
 
         //Destroy(tile);
         //
 
 
-        IDestroyable target = gameObject.GetComponent<IDestroyable>();
+        //IDestroyable target = gameObject.GetComponent<IDestroyable>();
 
-        if (target != null)
-        {
-            target.Destroy();
-            Destroy(gameObject);
-        }
-        board[y, x] = null;
-        Debug.Log("board[y, x] = " + board[y, x] );
-        Debug.Log(" "  );
-
+        //if (target != null)
+        //{
+        //    target.Destroy();
+        //    Destroy(gameObject);
+        //}
+        //board[y, x] = null;
+        //Debug.Log("board[y, x] = " + board[y, x]);
+        //Debug.Log(" ");
+        //OnBoardChanged();
     }
 
     private void OnBoardChanged()
     {
-
+        ApplyGravity();
+        UpdateVisuals();
     }
 
     private void CellGoesDownOneTile()
@@ -118,6 +120,21 @@ public class TilesManager : MonoBehaviour
         //if (board[y, x] < 0 || Y < 0)
         {
             return;
+        }
+    }
+
+    void ApplyGravity()
+    {
+        for (int y = 0; y < cols; y++)
+        {
+            for (int x = 0; x < rows; x++)
+            {
+                //if (board[y, x] == null && board[y, x + 1] != null)
+                //{
+                //    board[y, x] = board[y, x + 1];
+                //    board[y, x + 1] = null;
+                //}
+            }
         }
     }
 }

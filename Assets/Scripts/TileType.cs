@@ -11,8 +11,8 @@ public enum TileType
 public class Cell
 {
     public TileType Type;
-    public bool CanFall = true;
-    public bool CanBeMatched = true;
+    public bool CanFall = false;
+    public bool CanBeMatched = false;
 
     public bool WantsToGoDown()
     {
