@@ -8,6 +8,7 @@ public class TilesManager : MonoBehaviour
     private Tile[,] views;
     private int cols = 3;
     private int rows = 5;
+    private Tile tile;
     //private Vector2 spawnPosition;
     [SerializeField] private Tile tilePrefab;
 
@@ -54,14 +55,15 @@ public class TilesManager : MonoBehaviour
         {
             for (int y = 0; y < rows; y++)
             {
-                Tile tile = Instantiate(tilePrefab);
+                 tile = Instantiate(tilePrefab);
 
                 tile.Init(x, y, this);
 
-                tile.transform.position = new Vector3(
-                    x,
-                    y,
-                    0);
+                //tile.transform.position = new Vector3(
+                //    x,
+                //    y,
+                //    0);
+                UpdateWorldPos(x,y,tile);
 
                 views[x, y] = tile;
             }
@@ -79,9 +81,23 @@ public class TilesManager : MonoBehaviour
 
                 //if (board[y, x] == null)
                 //    Debug.Log($"board[{y},{x}] is null");
+
+                if (views[x, y] == null)
+                {
+                    continue;
+                }
+
+                if (board[x, y] == null)
+                {
+                    continue;
+                }
+
                 views[x, y].SetSprite(board[x, y].Type);
+                UpdateWorldPos(x, y, tile);
+
             }
         }
+
     }
 
     public void OnTileClicked(int x, int y, GameObject gameObject)
@@ -91,22 +107,26 @@ public class TilesManager : MonoBehaviour
         //Cell cell = board[y, x];
         Tile tile = views[x, y];
         Debug.Log("this is " + tile.X + " " + tile.Y);
+        Debug.Log("this is " + views[x, y]+ " with x = "+x +" and y = "+ y);
+        Debug.Log(" " );
 
         //Destroy(tile);
         //
 
 
-        //IDestroyable target = gameObject.GetComponent<IDestroyable>();
+        IDestroyable target = gameObject.GetComponent<IDestroyable>();
 
-        //if (target != null)
-        //{
-        //    target.Destroy();
-        //    Destroy(gameObject);
-        //}
-        //board[y, x] = null;
+        if (target != null)
+        {
+            target.Destroy();
+            Destroy(gameObject);
+        }
+        board[x, y] = null;
         //Debug.Log("board[y, x] = " + board[y, x]);
         //Debug.Log(" ");
-        //OnBoardChanged();
+        //Debug.Log("OnBoardChanged(); ");
+        //Debug.Log(" ");
+        OnBoardChanged();
     }
 
     private void OnBoardChanged()
@@ -125,16 +145,28 @@ public class TilesManager : MonoBehaviour
 
     void ApplyGravity()
     {
-        for (int y = 0; y < cols; y++)
+        for (int x = 0; x < cols; x++)
         {
-            for (int x = 0; x < rows; x++)
+            for (int y = 0; y < rows-1; y++)
             {
-                //if (board[y, x] == null && board[y, x + 1] != null)
-                //{
-                //    board[y, x] = board[y, x + 1];
-                //    board[y, x + 1] = null;
-                //}
+                if (board[x, y] == null && board[x, y + 1] != null)
+                {
+                    Debug.Log(" ");
+                    Debug.Log("found null, getting down");
+                    Debug.Log(" ");
+
+                    board[x, y] = board[x, y + 1];
+                    board[x, y + 1] = null;
+                }
             }
         }
+    }
+
+    void UpdateWorldPos(int x, int y, Tile tile)
+    {
+        tile.transform.position = new Vector3(
+            x,
+            y,
+            0);
     }
 }
