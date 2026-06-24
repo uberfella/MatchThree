@@ -63,7 +63,7 @@ public class TilesManager : MonoBehaviour
                 //    x,
                 //    y,
                 //    0);
-                UpdateWorldPos(x,y,tile);
+                UpdateWorldPos(x, y, tile);
 
                 views[x, y] = tile;
             }
@@ -122,6 +122,7 @@ public class TilesManager : MonoBehaviour
             Destroy(gameObject);
         }
         board[x, y] = null;
+        views[x, y] = null;
         //Debug.Log("board[y, x] = " + board[y, x]);
         //Debug.Log(" ");
         //Debug.Log("OnBoardChanged(); ");
@@ -133,14 +134,6 @@ public class TilesManager : MonoBehaviour
     {
         ApplyGravity();
         UpdateVisuals();
-    }
-
-    private void CellGoesDownOneTile()
-    {
-        //if (board[y, x] < 0 || Y < 0)
-        {
-            return;
-        }
     }
 
     void ApplyGravity()

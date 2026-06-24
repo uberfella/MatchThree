@@ -34,15 +34,6 @@ public class Tile : MonoBehaviour, IDestroyable
         Destroy(gameObject);
     }
 
-    public void TileGoesDownOneCell()
-    {
-        if (X < 0 || Y < 0)
-        {
-            return;
-        }
-        X--;
-    }
-
     private void OnMouseDown()
     {
         tilesManager.OnTileClicked(X, Y, gameObject);
