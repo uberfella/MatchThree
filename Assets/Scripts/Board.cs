@@ -21,7 +21,8 @@ public class Board : MonoBehaviour
             {
                 Vector2 tempPosition = new Vector2(i, j);
                 GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity);
-
+                backgroundTile.transform.parent = this.transform;
+                backgroundTile.name = "(" + i + ", " + j + ")";
 
             }
         }

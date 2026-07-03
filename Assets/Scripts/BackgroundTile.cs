@@ -2,15 +2,22 @@ using UnityEngine;
 
 public class BackgroundTile : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public GameObject[] dots;
     void Start()
+    {
+        Initialize();
+    }
+
+    void Update()
     {
         
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Initialize()
     {
-        
+        int dotToUse = Random.Range(0, dots.Length);
+        GameObject dot = Instantiate(dots[dotToUse], transform.position, Quaternion.identity);
+        dot.transform.parent = this.transform;
+        dot.name = this.gameObject.name;
     }
 }
