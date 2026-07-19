@@ -4,7 +4,7 @@ using UnityEngine;
 public class DevelopmentPlan
 {
     /*
-    CellManager manages cell -> empty, occupied, occupied with what 
+    individual cell -> empty, occupied, occupied with what ✔
     left click empties cell -> cell is Empty 
     cell underneath empty -> cell above goes down one tile
     3 matches
