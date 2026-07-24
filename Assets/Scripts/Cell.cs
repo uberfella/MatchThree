@@ -9,17 +9,7 @@ public class Cell : MonoBehaviour
 
     void Start()
     {
-        EnsureCollider();
         Initialize();
-    }
-
-    private void EnsureCollider()
-    {
-        // Add a 2D collider if the prefab didn't include one (safe for 2D match-3)
-        if (GetComponent<Collider2D>() == null)
-        {
-            gameObject.AddComponent<BoxCollider2D>();
-        }
     }
 
     private void Initialize()
