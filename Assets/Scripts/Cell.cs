@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Cell : MonoBehaviour
 {
@@ -38,5 +39,30 @@ public class Cell : MonoBehaviour
 
         // Destroy this cell GameObject
         Destroy(gameObject);
+    }
+
+    public void ChangePosition(int x, int y) 
+    {
+        this.x = x;
+        this.y = y;
+        transform.position = new Vector3(x, y, transform.position.z);
+
+        Debug.Log($"moving {gameObject.name} to {x}, {y}");
+    }
+
+    private void OnMouseOver()
+    {
+        // 1 represents the right mouse button
+        if (Input.GetMouseButtonDown(1))
+        {
+            OnRightClick();
+        }
+    }
+
+    private void OnRightClick()
+    {
+        Debug.Log($"Right-clicked on: {gameObject.name} {x}, {y}");
+        // Add your custom logic here
+        //ChangePosition(1, 1);
     }
 }

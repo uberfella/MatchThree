@@ -7,6 +7,9 @@ public class Board : MonoBehaviour
     public GameObject tilePrefab;
     private Cell[,] allTiles;
 
+    private int readIndex = 0;
+    private int writeIndex = 0;
+
     void Start()
     {
         allTiles = new Cell[width, height];
@@ -20,21 +23,21 @@ public class Board : MonoBehaviour
             for (int j = 0; j < height; j++)
             {
                 Vector2 tempPosition = new Vector2(i, j);
-                GameObject cellObj = Instantiate(tilePrefab, tempPosition, Quaternion.identity, transform);
-                cellObj.name = "(" + i + ", " + j + ")";
+                GameObject cellObject = Instantiate(tilePrefab, tempPosition, Quaternion.identity, transform);
+                cellObject.name = "(" + i + ", " + j + ")";
 
                 // Ensure there's a Cell component
-                Cell cellComp = cellObj.GetComponent<Cell>();
-                if (cellComp == null)
+                Cell cellComponent = cellObject.GetComponent<Cell>();
+                if (cellComponent == null)
                 {
-                    cellComp = cellObj.AddComponent<Cell>();
+                    cellComponent = cellObject.AddComponent<Cell>();
                 }
 
                 // Set coordinates so the cell can notify the board directly
-                cellComp.x = i;
-                cellComp.y = j;
+                cellComponent.x = i;
+                cellComponent.y = j;
 
-                allTiles[i, j] = cellComp;
+                allTiles[i, j] = cellComponent;
             }
         }
     }
@@ -51,6 +54,58 @@ public class Board : MonoBehaviour
             Debug.Log("");
             allTiles[cell.x, cell.y] = null;
             return;
+        }
+    }
+
+    private void ApplyGravityAlgo() 
+    {
+        for (int j = 0; j < height; j++)
+        {
+            if (allTiles[0, j] != null && j != writeIndex)
+            {
+                allTiles[0, j].ChangePosition(0, writeIndex);
+
+                writeIndex++;
+            }
+        }
+    }
+
+    private void CheckForEmptyTiles()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (allTiles[i, j] == null)
+                {
+                    Debug.Log("");
+                    Debug.Log($"Empty tile at ({i}, {j})");
+                    Debug.Log("");
+
+                }
+            }
+        }
+    }
+
+    private void CheckColumnForEmptyTiles(int columnToCheck)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            if (allTiles[columnToCheck, j] == null)
+            {
+                Debug.Log("");
+                Debug.Log($"Empty tile at ({columnToCheck}, {j})");
+                Debug.Log("");
+            }
+        }
+    }
+
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+
         }
     }
 
