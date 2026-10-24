@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Cell : MonoBehaviour
 {
@@ -7,11 +6,26 @@ public class Cell : MonoBehaviour
     public GameObject[] dots;
     public int x = -1;
     public int y = -1;
+    public float fallSpeed = 8f;
+
+    private const int RightMouseButton = 1;
+
+    private Vector3 target;
+    private bool moving;
+
+    public bool IsMoving => moving;
 
     void Start()
     {
         Initialize();
     }
+
+    void Update()
+    {
+        MoveTowardsTarget();
+    }
+
+    #region Visuals
 
     private void Initialize()
     {
@@ -21,39 +35,61 @@ public class Cell : MonoBehaviour
             return;
         }
 
-        int dotToUse = Random.Range(0, dots.Length);
-        Type = (TileType)dotToUse;
-        GameObject dot = Instantiate(dots[dotToUse], transform.position, Quaternion.identity, transform);
-        dot.name = this.gameObject.name;
-    }
+        // Type is assigned by the Board so it can avoid starting matches
+        GameObject dot = Instantiate(dots[(int)Type], transform.position, Quaternion.identity, transform);
+        dot.name = gameObject.name;
 
-    // Invoked when the object is clicked (requires Collider2D + Physics2D raycasts)
-    void OnMouseDown()
-    {
-        // Notify board to clear its reference for this cell
-        Board board = GetComponentInParent<Board>();
-        if (board != null)
+        // Keeps the cell hidden while it waits above the board
+        foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>())
         {
-            board.RemoveCell(this);
+            sr.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
-
-        // Destroy this cell GameObject
-        Destroy(gameObject);
     }
 
-    public void ChangePosition(int x, int y) 
+    #endregion
+
+    #region Movement
+
+    public void ChangePosition(int x, int y)
     {
         this.x = x;
         this.y = y;
-        transform.position = new Vector3(x, y, transform.position.z);
-
-        Debug.Log($"moving {gameObject.name} to {x}, {y}");
+        target = new Vector3(x, y, transform.position.z);
+        moving = true;
     }
 
-    private void OnMouseOver()
+    private void MoveTowardsTarget()
     {
-        // 1 represents the right mouse button
-        if (Input.GetMouseButtonDown(1))
+        if (!moving) return;
+
+        transform.position = Vector3.MoveTowards(transform.position, target, fallSpeed * Time.deltaTime);
+        if (transform.position == target)
+        {
+            moving = false;
+        }
+    }
+
+    #endregion
+
+    #region Input
+
+    // Needs a Collider2D on the prefab
+    void OnMouseDown()
+    {
+        Board board = GetComponentInParent<Board>();
+        if (board != null)
+        {
+            // Removing a cell mid-fall would desync the grid from what's on screen
+            if (board.IsBusy) return;
+            board.RemoveCell(this);
+        }
+
+        Destroy(gameObject);
+    }
+
+    void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(RightMouseButton))
         {
             OnRightClick();
         }
@@ -62,7 +98,7 @@ public class Cell : MonoBehaviour
     private void OnRightClick()
     {
         Debug.Log($"Right-clicked on: {gameObject.name} {x}, {y}");
-        // Add your custom logic here
-        //ChangePosition(1, 1);
     }
+
+    #endregion
 }
