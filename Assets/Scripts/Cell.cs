@@ -11,6 +11,9 @@ public class Cell : MonoBehaviour
     private const int RightMouseButton = 1;
 
     private Vector3 target;
+    // Set while a teleporting cell is still on its way to the exit; it reappears at this point
+    private Vector3? teleportEntry;
+    private Vector3 finalTarget;
     private bool moving;
 
     public bool IsMoving => moving;
@@ -54,7 +57,28 @@ public class Cell : MonoBehaviour
     {
         this.x = x;
         this.y = y;
-        target = new Vector3(x, y, transform.position.z);
+        Vector3 destination = new Vector3(x, y, transform.position.z);
+
+        // Not through the teleport yet: only the place it ends up changes
+        if (teleportEntry.HasValue)
+        {
+            finalTarget = destination;
+            return;
+        }
+
+        target = destination;
+        moving = true;
+    }
+
+    // Slides out through exitPoint, then reappears at entryPoint and falls to (x, y)
+    public void TeleportTo(int x, int y, Vector2 exitPoint, Vector2 entryPoint)
+    {
+        this.x = x;
+        this.y = y;
+        float z = transform.position.z;
+        target = new Vector3(exitPoint.x, exitPoint.y, z);
+        teleportEntry = new Vector3(entryPoint.x, entryPoint.y, z);
+        finalTarget = new Vector3(x, y, z);
         moving = true;
     }
 
@@ -63,10 +87,17 @@ public class Cell : MonoBehaviour
         if (!moving) return;
 
         transform.position = Vector3.MoveTowards(transform.position, target, fallSpeed * Time.deltaTime);
-        if (transform.position == target)
+        if (transform.position != target) return;
+
+        if (teleportEntry.HasValue)
         {
-            moving = false;
+            transform.position = teleportEntry.Value;
+            teleportEntry = null;
+            target = finalTarget;
+            return;
         }
+
+        moving = false;
     }
 
     #endregion
