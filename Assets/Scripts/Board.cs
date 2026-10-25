@@ -19,12 +19,16 @@ public class Board : MonoBehaviour
     public int fieldHeight = 3;
     public int gapHeight = 3;
     public GameObject tilePrefab;
+    // Spawned when four cells are matched in a line; tapping it clears a cross around it
+    public GameObject rocketPrefab;
     public List<Teleport> teleports = new List<Teleport>();
     private Cell[,] allTiles;
     // Teleport exits keyed by the slot they feed into
     private Dictionary<Vector2Int, Vector2Int> teleportSources = new Dictionary<Vector2Int, Vector2Int>();
     // Positions that are holes in the level: no cell is ever spawned there or moves through
     private bool[,] blocked;
+    // Powerups moved by the player's last swap; they go off when the board settles
+    private List<Cell> swappedPowerups = new List<Cell>();
 
     private int height => fieldHeight * 2 + gapHeight;
 
@@ -151,6 +155,92 @@ public class Board : MonoBehaviour
         StartCoroutine(ResolveBoard());
     }
 
+    public void ActivatePowerup(Cell powerup)
+    {
+        if (IsBusy || powerup == null || !powerup.isPowerup) return;
+        if (allTiles[powerup.x, powerup.y] != powerup) return;
+
+        Explode(new List<Cell> { powerup });
+        StartCoroutine(ResolveBoard());
+    }
+
+    // Replaces the cell with a rocket
+    public void ConvertToRocket(Cell cell)
+    {
+        if (IsBusy || cell == null || cell.isPowerup) return;
+        if (allTiles[cell.x, cell.y] != cell) return;
+
+        allTiles[cell.x, cell.y] = null;
+        Destroy(cell.gameObject);
+        SpawnRocket(cell.x, cell.y);
+    }
+
+    // Clears each powerup and its four direct neighbours (a cross inside a 3x3 area).
+    // All crosses are worked out before anything is destroyed, so adjacent powerups still all go off
+    private void Explode(List<Cell> powerups)
+    {
+        Vector2Int[] offsets =
+        {
+            Vector2Int.zero, Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+        };
+        HashSet<Vector2Int> targets = new HashSet<Vector2Int>();
+
+        foreach (Cell powerup in powerups)
+        {
+            foreach (Vector2Int offset in offsets)
+            {
+                targets.Add(new Vector2Int(powerup.x, powerup.y) + offset);
+            }
+        }
+
+        foreach (Vector2Int p in targets)
+        {
+            if (!IsPlayable(p) || allTiles[p.x, p.y] == null) continue;
+
+            Destroy(allTiles[p.x, p.y].gameObject);
+            allTiles[p.x, p.y] = null;
+        }
+    }
+
+    // Explodes the powerups that were swapped, once they have arrived at their new slots
+    private bool ExplodeSwapped()
+    {
+        List<Cell> exploding = new List<Cell>();
+
+        foreach (Cell powerup in swappedPowerups)
+        {
+            if (powerup != null && allTiles[powerup.x, powerup.y] == powerup) exploding.Add(powerup);
+        }
+
+        swappedPowerups.Clear();
+        if (exploding.Count == 0) return false;
+
+        Explode(exploding);
+        return true;
+    }
+
+    // Swaps the cell with its neighbour in 'direction'. Silently does nothing when the neighbour is outside the field
+    public void TrySwap(Cell cell, Vector2Int direction)
+    {
+        if (IsBusy || cell == null) return;
+
+        Vector2Int from = new Vector2Int(cell.x, cell.y);
+        Vector2Int to = from + direction;
+        if (!IsPlayable(from) || !IsPlayable(to)) return;
+        if (allTiles[from.x, from.y] != cell) return;
+
+        Cell other = allTiles[to.x, to.y];
+        if (other == null) return;
+
+        allTiles[from.x, from.y] = other;
+        allTiles[to.x, to.y] = cell;
+        cell.ChangePosition(to.x, to.y);
+        other.ChangePosition(from.x, from.y);
+        if (cell.isPowerup) swappedPowerups.Add(cell);
+        if (other.isPowerup) swappedPowerups.Add(other);
+        StartCoroutine(ResolveBoard());
+    }
+
     #endregion
 
     #region Resolving the board
@@ -160,6 +250,7 @@ public class Board : MonoBehaviour
     {
         IsBusy = true;
 
+        bool again;
         do
         {
             do
@@ -169,8 +260,12 @@ public class Board : MonoBehaviour
             while (RefillSpawners());
 
             while (AnyCellMoving()) yield return null;
+
+            bool exploded = ExplodeSwapped();
+            bool cleared = ClearMatches();
+            again = exploded || cleared;
         }
-        while (ClearMatches());
+        while (again);
 
         IsBusy = false;
     }
@@ -273,6 +368,7 @@ public class Board : MonoBehaviour
     private bool ClearMatches()
     {
         bool[,] matched = MatchFinder.FindMatches(allTiles);
+        List<Vector2Int> powerupSpots = MatchFinder.FindFourInARow(allTiles);
         bool any = false;
 
         for (int x = 0; x < width; x++)
@@ -287,7 +383,24 @@ public class Board : MonoBehaviour
             }
         }
 
+        foreach (Vector2Int spot in powerupSpots) SpawnRocket(spot.x, spot.y);
+
         return any;
+    }
+
+    private void SpawnRocket(int x, int y)
+    {
+        if (rocketPrefab == null || allTiles[x, y] != null) return;
+
+        GameObject rocketObject = Instantiate(rocketPrefab, new Vector3(x, y, 0), Quaternion.identity, transform);
+        rocketObject.name = "Rocket (" + x + ", " + y + ")";
+        if (rocketObject.GetComponent<Collider2D>() == null) rocketObject.AddComponent<BoxCollider2D>();
+
+        Cell cell = rocketObject.AddComponent<Cell>();
+        cell.isPowerup = true;
+        cell.x = x;
+        cell.y = y;
+        allTiles[x, y] = cell;
     }
 
     private bool AnyCellMoving()

@@ -13,5 +13,11 @@ public class DevelopmentPlan
 
     new type of cell that is just a gap ✔
     teleports ✔
+    moving cells ✔
+
+
+    4 cells in a line rocket - triangle ✔
+    6 cells in a pattern bomb - square
+    5 cells in a line color - star
     */
 }

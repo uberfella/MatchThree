@@ -289,6 +289,7 @@ MonoBehaviour:
   fieldHeight: 3
   gapHeight: 3
   tilePrefab: {fileID: 5941262076697067822, guid: da992c7c6b8997f4ab5cb6ff23be99af, type: 3}
+  rocketPrefab: {fileID: 6435846070720678274, guid: bc4d480c2a5ad8847a4fca37fbc980eb, type: 3}
   teleports:
   - from: {x: 0, y: 0}
     to: {x: 0, y: 8}
