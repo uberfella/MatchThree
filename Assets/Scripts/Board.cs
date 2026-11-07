@@ -23,6 +23,8 @@ public class Board : MonoBehaviour
     public GameObject rocketPrefab;
     // Optional; without it the bomb is a tinted copy of the rocket
     public GameObject bombPrefab;
+    // Optional; without it the color booster is a tinted copy of the rocket
+    public GameObject colorBoosterPrefab;
     public List<Teleport> teleports = new List<Teleport>();
     private Cell[,] allTiles;
     // Teleport exits keyed by the slot they feed into
@@ -31,6 +33,8 @@ public class Board : MonoBehaviour
     private bool[,] blocked;
     // Powerups moved by the player's last swap; they go off when the board settles
     private List<Cell> swappedPowerups = new List<Cell>();
+    // What each color booster was swapped with
+    private Dictionary<Cell, Cell> swapPartners = new Dictionary<Cell, Cell>();
 
     private int height => fieldHeight * 2 + gapHeight;
 
@@ -162,8 +166,7 @@ public class Board : MonoBehaviour
         if (IsBusy || powerup == null || !powerup.isPowerup) return;
         if (allTiles[powerup.x, powerup.y] != powerup) return;
 
-        Explode(new List<Cell> { powerup });
-        StartCoroutine(ResolveBoard());
+        StartCoroutine(ResolveBoard(new List<Cell> { powerup }));
     }
 
     // Replaces the cell with a rocket
@@ -188,37 +191,52 @@ public class Board : MonoBehaviour
         SpawnRocket(cell.x, cell.y, true);
     }
 
-    // Debug: turns a 5 wide x 3 high area centred on the cell into rockets
-    public void ConvertAreaToRockets(Cell center)
+    // Replaces the cell with a color booster
+    public void ConvertToColorBooster(Cell cell)
     {
-        if (IsBusy || center == null) return;
+        if (IsBusy || cell == null || cell.isPowerup) return;
+        if (allTiles[cell.x, cell.y] != cell) return;
 
-        for (int dx = -2; dx <= 2; dx++)
-        {
-            for (int dy = -1; dy <= 1; dy++)
+        allTiles[cell.x, cell.y] = null;
+        Destroy(cell.gameObject);
+        SpawnRocket(cell.x, cell.y, false, true);
+    }
+
+    // The color with the most tiles on the field (random among ties), or null when the field has no plain tiles
+    private TileType? PickMostCommonType()
+    {
+        int[] counts = new int[System.Enum.GetValues(typeof(TileType)).Length];
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
             {
-                Vector2Int p = new Vector2Int(center.x + dx, center.y + dy);
-                if (!IsPlayable(p)) continue;
-
-                Cell cell = allTiles[p.x, p.y];
-                if (cell == null || cell.isPowerup) continue;
-
-                allTiles[p.x, p.y] = null;
-                Destroy(cell.gameObject);
-                SpawnRocket(p.x, p.y);
+                Cell cell = allTiles[x, y];
+                if (cell != null && !cell.isPowerup && IsPlayable(new Vector2Int(x, y))) counts[(int)cell.Type]++;
             }
+
+        int best = 0;
+        List<int> bestTypes = new List<int>();
+        for (int i = 0; i < counts.Length; i++)
+        {
+            if (counts[i] == 0 || counts[i] < best) continue;
+            if (counts[i] > best) { best = counts[i]; bestTypes.Clear(); }
+            bestTypes.Add(i);
         }
+
+        if (bestTypes.Count == 0) return null;
+        return (TileType)bestTypes[Random.Range(0, bestTypes.Count)];
     }
 
     // Clears each powerup and its four direct neighbours (a cross inside a 3x3 area).
     // All crosses are worked out before anything is destroyed, so adjacent powerups still all go off
-    private void Explode(List<Cell> powerups)
+    private IEnumerator Explode(List<Cell> powerups)
     {
         Vector2Int[] offsets =
         {
             Vector2Int.zero, Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
         };
         HashSet<Vector2Int> targets = new HashSet<Vector2Int>();
+        // Color booster victims: they flicker for a moment before they go
+        HashSet<Vector2Int> delayed = new HashSet<Vector2Int>();
         HashSet<Vector2Int> detonated = new HashSet<Vector2Int>();
         Queue<Vector2Int> pending = new Queue<Vector2Int>();
 
@@ -231,24 +249,72 @@ public class Board : MonoBehaviour
             if (!detonated.Add(center)) continue;
 
             Cell source = allTiles[center.x, center.y];
+
+            if (source != null && source.isColorBooster)
+            {
+                delayed.Add(center);
+                swapPartners.TryGetValue(source, out Cell partner);
+
+                if (partner != null && partner.isColorBooster)
+                {
+                    // Two color boosters together clear the whole board
+                    for (int x = 0; x < width; x++)
+                        for (int y = 0; y < height; y++)
+                            if (allTiles[x, y] != null && IsPlayable(new Vector2Int(x, y))) delayed.Add(new Vector2Int(x, y));
+                    continue;
+                }
+
+                // Swapped with a plain tile: that tile's color. Otherwise the most common color
+                TileType? chosen = partner != null && !partner.isPowerup ? partner.Type : PickMostCommonType();
+                if (!chosen.HasValue) continue;
+
+                for (int x = 0; x < width; x++)
+                    for (int y = 0; y < height; y++)
+                    {
+                        Cell cell = allTiles[x, y];
+                        if (cell != null && !cell.isPowerup && cell.Type == chosen.Value && IsPlayable(new Vector2Int(x, y)))
+                            delayed.Add(new Vector2Int(x, y));
+                    }
+                continue;
+            }
+
             foreach (Vector2Int offset in source != null && source.isBomb ? BombOffsets() : (IEnumerable<Vector2Int>)offsets)
             {
                 Vector2Int p = center + offset;
                 if (!IsPlayable(p)) continue;
 
-                targets.Add(p);
                 Cell hit = allTiles[p.x, p.y];
+                // Blasts never touch a color booster; only a tap or a swap sets it off
+                if (hit != null && hit.isColorBooster) continue;
+
+                targets.Add(p);
                 if (hit != null && hit.isPowerup) pending.Enqueue(p);
             }
         }
 
-        foreach (Vector2Int p in targets)
-        {
-            if (allTiles[p.x, p.y] == null) continue;
+        foreach (Vector2Int p in targets) RemoveAt(p);
 
-            Destroy(allTiles[p.x, p.y].gameObject);
-            allTiles[p.x, p.y] = null;
+        if (delayed.Count > 0)
+        {
+            foreach (Vector2Int p in delayed)
+            {
+                if (allTiles[p.x, p.y] != null) allTiles[p.x, p.y].Flicker(ColorBoosterDelay);
+            }
+
+            yield return new WaitForSeconds(ColorBoosterDelay);
+
+            foreach (Vector2Int p in delayed) RemoveAt(p);
         }
+    }
+
+    private const float ColorBoosterDelay = 1f;
+
+    private void RemoveAt(Vector2Int p)
+    {
+        if (allTiles[p.x, p.y] == null) return;
+
+        Destroy(allTiles[p.x, p.y].gameObject);
+        allTiles[p.x, p.y] = null;
     }
 
     // A bomb clears a (2 * BombRadius + 1) square around itself, minus its four corners
@@ -268,21 +334,37 @@ public class Board : MonoBehaviour
     }
 
     // Explodes the powerups that were swapped, once they have arrived at their new slots
-    private bool ExplodeSwapped()
+    private IEnumerator ExplodeSwapped()
     {
         List<Cell> exploding = new List<Cell>();
 
         foreach (Cell powerup in swappedPowerups)
         {
-            if (powerup != null && allTiles[powerup.x, powerup.y] == powerup) exploding.Add(powerup);
+            if (powerup == null || allTiles[powerup.x, powerup.y] != powerup) continue;
+
+            // A color booster swapped with a rocket or bomb stays put; the rocket or bomb goes off instead
+            if (powerup.isColorBooster && swapPartners.TryGetValue(powerup, out Cell partner)
+                && partner != null && partner.isPowerup && !partner.isColorBooster)
+            {
+                continue;
+            }
+
+            exploding.Add(powerup);
         }
 
         swappedPowerups.Clear();
-        if (exploding.Count == 0) return false;
+        lastExploded = exploding.Count > 0;
+        if (!lastExploded)
+        {
+            swapPartners.Clear();
+            yield break;
+        }
 
-        Explode(exploding);
-        return true;
+        yield return Explode(exploding);
+        swapPartners.Clear();
     }
+
+    private bool lastExploded;
 
     // Swaps the cell with its neighbour in 'direction'. Silently does nothing when the neighbour is outside the field
     public void TrySwap(Cell cell, Vector2Int direction)
@@ -301,6 +383,8 @@ public class Board : MonoBehaviour
         allTiles[to.x, to.y] = cell;
         cell.ChangePosition(to.x, to.y);
         other.ChangePosition(from.x, from.y);
+        if (cell.isColorBooster) swapPartners[cell] = other;
+        if (other.isColorBooster) swapPartners[other] = cell;
         if (cell.isPowerup) swappedPowerups.Add(cell);
         if (other.isPowerup) swappedPowerups.Add(other);
         StartCoroutine(ResolveBoard());
@@ -311,9 +395,11 @@ public class Board : MonoBehaviour
     #region Resolving the board
 
     // Loops because refilled cells can form new matches (cascades)
-    private IEnumerator ResolveBoard()
+    private IEnumerator ResolveBoard(List<Cell> activated = null)
     {
         IsBusy = true;
+
+        if (activated != null) yield return Explode(activated);
 
         bool again;
         do
@@ -326,7 +412,8 @@ public class Board : MonoBehaviour
 
             while (AnyCellMoving()) yield return null;
 
-            bool exploded = ExplodeSwapped();
+            yield return ExplodeSwapped();
+            bool exploded = lastExploded;
             bool cleared = ClearMatches();
             again = exploded || cleared;
         }
@@ -435,6 +522,7 @@ public class Board : MonoBehaviour
         bool[,] matched = MatchFinder.FindMatches(allTiles);
         List<Vector2Int> powerupSpots = MatchFinder.FindFourInARow(allTiles);
         List<Vector2Int> bombSpots = MatchFinder.FindBombs(allTiles);
+        List<Vector2Int> colorSpots = MatchFinder.FindColorBoosters(allTiles);
         bool any = false;
 
         for (int x = 0; x < width; x++)
@@ -451,18 +539,26 @@ public class Board : MonoBehaviour
 
         foreach (Vector2Int spot in powerupSpots) SpawnRocket(spot.x, spot.y);
         foreach (Vector2Int spot in bombSpots) SpawnRocket(spot.x, spot.y, true);
+        foreach (Vector2Int spot in colorSpots) SpawnRocket(spot.x, spot.y, false, true);
 
         return any;
     }
 
-    private void SpawnRocket(int x, int y, bool bomb = false)
+    private void SpawnRocket(int x, int y, bool bomb = false, bool colorBooster = false)
     {
-        GameObject prefab = bomb && bombPrefab != null ? bombPrefab : rocketPrefab;
+        GameObject prefab = colorBooster && colorBoosterPrefab != null ? colorBoosterPrefab
+            : bomb && bombPrefab != null ? bombPrefab : rocketPrefab;
         if (prefab == null || allTiles[x, y] != null) return;
 
         GameObject rocketObject = Instantiate(prefab, new Vector3(x, y, 0), Quaternion.identity, transform);
-        rocketObject.name = (bomb ? "Bomb (" : "Rocket (") + x + ", " + y + ")";
-        if (bomb && bombPrefab == null)
+        rocketObject.name = (colorBooster ? "ColorBooster (" : bomb ? "Bomb (" : "Rocket (") + x + ", " + y + ")";
+        if (colorBooster && colorBoosterPrefab == null)
+        {
+            // No prefab assigned: reuse the rocket look, tinted and bigger
+            rocketObject.transform.localScale *= 1.25f;
+            foreach (SpriteRenderer sr in rocketObject.GetComponentsInChildren<SpriteRenderer>()) sr.color = new Color(0.7f, 0.3f, 1f);
+        }
+        else if (bomb && bombPrefab == null)
         {
             // No bomb prefab assigned: reuse the rocket look, tinted and bigger
             rocketObject.transform.localScale *= 1.25f;
@@ -473,6 +569,7 @@ public class Board : MonoBehaviour
         Cell cell = rocketObject.AddComponent<Cell>();
         cell.isPowerup = true;
         cell.isBomb = bomb;
+        cell.isColorBooster = colorBooster;
         cell.x = x;
         cell.y = y;
         allTiles[x, y] = cell;

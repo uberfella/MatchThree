@@ -8,6 +8,8 @@ public class Cell : MonoBehaviour
     public bool isPowerup;
     // A bomb is a powerup with a bigger blast than the rocket
     public bool isBomb;
+    // A color booster removes every tile of the most common color on the field
+    public bool isColorBooster;
     public GameObject[] dots;
     public int x = -1;
     public int y = -1;
@@ -197,6 +199,31 @@ public class Cell : MonoBehaviour
         if (highlight == null) highlight = StartCoroutine(HighlightRoutine());
     }
 
+    // Blinks like a tap highlight for the given time (used before the cell is removed)
+    public void Flicker(float seconds)
+    {
+        StartCoroutine(FlickerRoutine(seconds));
+    }
+
+    private IEnumerator FlickerRoutine(float seconds)
+    {
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
+        Color[] originals = new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++) originals[i] = renderers[i].color;
+
+        float end = Time.time + seconds;
+        bool lit = true;
+        while (Time.time < end)
+        {
+            for (int i = 0; i < renderers.Length; i++)
+                renderers[i].color = lit ? Color.Lerp(originals[i], Color.white, HighlightStrength) : originals[i];
+            lit = !lit;
+            yield return new WaitForSeconds(HighlightSeconds);
+        }
+
+        for (int i = 0; i < renderers.Length; i++) renderers[i].color = originals[i];
+    }
+
     private IEnumerator HighlightRoutine()
     {
         SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
@@ -236,7 +263,7 @@ public class Cell : MonoBehaviour
         if (Input.GetKey(KeyCode.Alpha3) || Input.GetKey(KeyCode.Keypad3))
         {
             Board board = GetComponentInParent<Board>();
-            if (board != null) board.ConvertAreaToRockets(this);
+            if (board != null) board.ConvertToColorBooster(this);
             return;
         }
 

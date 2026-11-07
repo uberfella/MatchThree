@@ -18,6 +18,11 @@ public class DevelopmentPlan
 
     4 cells in a line rocket - triangle ✔
     6 cells in a pattern bomb - square ✔
-    5 cells in a line color - star
+    5 cells in a line color - star ✔
+
+    main menu
+    levels in json
+    win/lose level conditions
+    use fancy 2d assets
     */
 }

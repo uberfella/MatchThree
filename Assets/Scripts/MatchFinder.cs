@@ -59,8 +59,32 @@ public static class MatchFinder
         return spots;
     }
 
-    // Bomb spots: the crossing cell of an L, T or + (a horizontal and a vertical line of 3+ sharing a cell),
-    // or the middle of a straight line of 5+
+    // Color booster spots: the middle of a straight line of 5+
+    public static List<Vector2Int> FindColorBoosters(Cell[,] grid)
+    {
+        int width = grid.GetLength(0);
+        int height = grid.GetLength(1);
+        List<Vector2Int> spots = new List<Vector2Int>();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Cell cell = grid[x, y];
+                if (cell == null || cell.isPowerup) continue;
+
+                if (!(x > 0 && IsSameType(cell, grid[x - 1, y])) && RunLength(grid, x, y, 1, 0) >= 5)
+                    spots.Add(new Vector2Int(x + 2, y));
+
+                if (!(y > 0 && IsSameType(cell, grid[x, y - 1])) && RunLength(grid, x, y, 0, 1) >= 5)
+                    spots.Add(new Vector2Int(x, y + 2));
+            }
+        }
+
+        return spots;
+    }
+
+    // Bomb spots: the crossing cell of an L, T or + (a horizontal and a vertical line of 3+ sharing a cell)
     public static List<Vector2Int> FindBombs(Cell[,] grid)
     {
         int width = grid.GetLength(0);
@@ -75,12 +99,6 @@ public static class MatchFinder
                 if (cell == null || cell.isPowerup) continue;
 
                 if (IsJunction(grid, x, y)) spots.Add(new Vector2Int(x, y));
-
-                if (!(x > 0 && IsSameType(cell, grid[x - 1, y])) && RunLength(grid, x, y, 1, 0) >= 5)
-                    spots.Add(new Vector2Int(x + 2, y));
-
-                if (!(y > 0 && IsSameType(cell, grid[x, y - 1])) && RunLength(grid, x, y, 0, 1) >= 5)
-                    spots.Add(new Vector2Int(x, y + 2));
             }
         }
 
