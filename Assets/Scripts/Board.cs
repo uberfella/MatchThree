@@ -21,6 +21,8 @@ public class Board : MonoBehaviour
     public GameObject tilePrefab;
     // Spawned when four cells are matched in a line; tapping it clears a cross around it
     public GameObject rocketPrefab;
+    // Optional; without it the bomb is a tinted copy of the rocket
+    public GameObject bombPrefab;
     public List<Teleport> teleports = new List<Teleport>();
     private Cell[,] allTiles;
     // Teleport exits keyed by the slot they feed into
@@ -175,6 +177,39 @@ public class Board : MonoBehaviour
         SpawnRocket(cell.x, cell.y);
     }
 
+    // Replaces the cell with a bomb
+    public void ConvertToBomb(Cell cell)
+    {
+        if (IsBusy || cell == null || cell.isPowerup) return;
+        if (allTiles[cell.x, cell.y] != cell) return;
+
+        allTiles[cell.x, cell.y] = null;
+        Destroy(cell.gameObject);
+        SpawnRocket(cell.x, cell.y, true);
+    }
+
+    // Debug: turns a 5 wide x 3 high area centred on the cell into rockets
+    public void ConvertAreaToRockets(Cell center)
+    {
+        if (IsBusy || center == null) return;
+
+        for (int dx = -2; dx <= 2; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                Vector2Int p = new Vector2Int(center.x + dx, center.y + dy);
+                if (!IsPlayable(p)) continue;
+
+                Cell cell = allTiles[p.x, p.y];
+                if (cell == null || cell.isPowerup) continue;
+
+                allTiles[p.x, p.y] = null;
+                Destroy(cell.gameObject);
+                SpawnRocket(p.x, p.y);
+            }
+        }
+    }
+
     // Clears each powerup and its four direct neighbours (a cross inside a 3x3 area).
     // All crosses are worked out before anything is destroyed, so adjacent powerups still all go off
     private void Explode(List<Cell> powerups)
@@ -184,22 +219,52 @@ public class Board : MonoBehaviour
             Vector2Int.zero, Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
         };
         HashSet<Vector2Int> targets = new HashSet<Vector2Int>();
+        HashSet<Vector2Int> detonated = new HashSet<Vector2Int>();
+        Queue<Vector2Int> pending = new Queue<Vector2Int>();
 
-        foreach (Cell powerup in powerups)
+        foreach (Cell powerup in powerups) pending.Enqueue(new Vector2Int(powerup.x, powerup.y));
+
+        // A powerup caught in a blast goes off too (chain reaction)
+        while (pending.Count > 0)
         {
-            foreach (Vector2Int offset in offsets)
+            Vector2Int center = pending.Dequeue();
+            if (!detonated.Add(center)) continue;
+
+            Cell source = allTiles[center.x, center.y];
+            foreach (Vector2Int offset in source != null && source.isBomb ? BombOffsets() : (IEnumerable<Vector2Int>)offsets)
             {
-                targets.Add(new Vector2Int(powerup.x, powerup.y) + offset);
+                Vector2Int p = center + offset;
+                if (!IsPlayable(p)) continue;
+
+                targets.Add(p);
+                Cell hit = allTiles[p.x, p.y];
+                if (hit != null && hit.isPowerup) pending.Enqueue(p);
             }
         }
 
         foreach (Vector2Int p in targets)
         {
-            if (!IsPlayable(p) || allTiles[p.x, p.y] == null) continue;
+            if (allTiles[p.x, p.y] == null) continue;
 
             Destroy(allTiles[p.x, p.y].gameObject);
             allTiles[p.x, p.y] = null;
         }
+    }
+
+    // A bomb clears a (2 * BombRadius + 1) square around itself, minus its four corners
+    private const int BombRadius = 2;
+
+    private static List<Vector2Int> BombOffsets()
+    {
+        List<Vector2Int> list = new List<Vector2Int>();
+        for (int dx = -BombRadius; dx <= BombRadius; dx++)
+            for (int dy = -BombRadius; dy <= BombRadius; dy++)
+            {
+                // Corners of the square are spared
+                if (Mathf.Abs(dx) == BombRadius && Mathf.Abs(dy) == BombRadius) continue;
+                list.Add(new Vector2Int(dx, dy));
+            }
+        return list;
     }
 
     // Explodes the powerups that were swapped, once they have arrived at their new slots
@@ -369,6 +434,7 @@ public class Board : MonoBehaviour
     {
         bool[,] matched = MatchFinder.FindMatches(allTiles);
         List<Vector2Int> powerupSpots = MatchFinder.FindFourInARow(allTiles);
+        List<Vector2Int> bombSpots = MatchFinder.FindBombs(allTiles);
         bool any = false;
 
         for (int x = 0; x < width; x++)
@@ -384,20 +450,29 @@ public class Board : MonoBehaviour
         }
 
         foreach (Vector2Int spot in powerupSpots) SpawnRocket(spot.x, spot.y);
+        foreach (Vector2Int spot in bombSpots) SpawnRocket(spot.x, spot.y, true);
 
         return any;
     }
 
-    private void SpawnRocket(int x, int y)
+    private void SpawnRocket(int x, int y, bool bomb = false)
     {
-        if (rocketPrefab == null || allTiles[x, y] != null) return;
+        GameObject prefab = bomb && bombPrefab != null ? bombPrefab : rocketPrefab;
+        if (prefab == null || allTiles[x, y] != null) return;
 
-        GameObject rocketObject = Instantiate(rocketPrefab, new Vector3(x, y, 0), Quaternion.identity, transform);
-        rocketObject.name = "Rocket (" + x + ", " + y + ")";
+        GameObject rocketObject = Instantiate(prefab, new Vector3(x, y, 0), Quaternion.identity, transform);
+        rocketObject.name = (bomb ? "Bomb (" : "Rocket (") + x + ", " + y + ")";
+        if (bomb && bombPrefab == null)
+        {
+            // No bomb prefab assigned: reuse the rocket look, tinted and bigger
+            rocketObject.transform.localScale *= 1.25f;
+            foreach (SpriteRenderer sr in rocketObject.GetComponentsInChildren<SpriteRenderer>()) sr.color = new Color(1f, 0.35f, 0.2f);
+        }
         if (rocketObject.GetComponent<Collider2D>() == null) rocketObject.AddComponent<BoxCollider2D>();
 
         Cell cell = rocketObject.AddComponent<Cell>();
         cell.isPowerup = true;
+        cell.isBomb = bomb;
         cell.x = x;
         cell.y = y;
         allTiles[x, y] = cell;

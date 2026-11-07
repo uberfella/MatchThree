@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7263202461104128699}
   - component: {fileID: 6767119036542864014}
   m_Layer: 0
-  m_Name: Blue Dot
+  m_Name: Powerup 5 Bomb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,8 +76,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 9af47d3ada15c854b8dee9f0315652d5, type: 3}
-  m_Color: {r: 0, g: 0, b: 0.9960785, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 1015bef14d7f2ad499f388421dfab5e8, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

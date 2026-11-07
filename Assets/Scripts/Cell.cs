@@ -6,6 +6,8 @@ public class Cell : MonoBehaviour
     public TileType Type;
     // A powerup never matches; tapping it triggers it instead
     public bool isPowerup;
+    // A bomb is a powerup with a bigger blast than the rocket
+    public bool isBomb;
     public GameObject[] dots;
     public int x = -1;
     public int y = -1;
@@ -221,6 +223,20 @@ public class Cell : MonoBehaviour
         {
             Board board = GetComponentInParent<Board>();
             if (board != null) board.ConvertToRocket(this);
+            return;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha2) || Input.GetKey(KeyCode.Keypad2))
+        {
+            Board board = GetComponentInParent<Board>();
+            if (board != null) board.ConvertToBomb(this);
+            return;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha3) || Input.GetKey(KeyCode.Keypad3))
+        {
+            Board board = GetComponentInParent<Board>();
+            if (board != null) board.ConvertAreaToRockets(this);
             return;
         }
 

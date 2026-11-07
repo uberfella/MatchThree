@@ -17,7 +17,7 @@ public class DevelopmentPlan
 
 
     4 cells in a line rocket - triangle ✔
-    6 cells in a pattern bomb - square
+    6 cells in a pattern bomb - square ✔
     5 cells in a line color - star
     */
 }
